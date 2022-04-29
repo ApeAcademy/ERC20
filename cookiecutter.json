@@ -1,0 +1,14 @@
+{
+    "project_name": "token-name",
+    "token_name": "Test Token",
+    "token_symbol": "TKN",
+    "token_decimals": "18",
+    "premint": "n",
+    "premint_amount": "1000",
+    "burnable": "n",
+    "pausable": "n",
+    "permit": "n",
+    "votes": "n",
+    "flashminting": "n",
+    "snapshot": "n"
+}
