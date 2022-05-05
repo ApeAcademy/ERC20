@@ -15,6 +15,9 @@ allowance: public(HashMap[address ,HashMap[address, uint256]])
 # Events
 # 3 params, indexed means that params is index by the eth note client, you can trigger 
 # you can filter on indexed
+# doesnt havr to run compuation
+# so you can iterate and look at data
+# log handlers for every transfer and iterate and filter
 event Transfer:
     sender: indexed(address)
     receiver: indexed(address)
@@ -23,13 +26,20 @@ event Transfer:
 event Approval: 
     owner: indexed(address)
     spender: indexed(address)
-    amount: uint256
+    amount: uint256 
+
+owner: public(address)
+{%- if cookiecutter.minter == "y" %}
+isMinter: public(HashMap[address, bool])
+{%- endif %}
+
     
 {%- if cookiecutter.premint == 'y' %} 
 @external
 def __init__():
-    self.totalSupply = {{cookiecutter.premint_amount}}
-    self.balanceOf[msg.sender] = {{cookiecutter.premint_amount}}
+    self.owner = msg.sender
+    self.totalSupply = 1000
+    self.balanceOf[msg.sender] = 1000
 {%- endif %}
 
 # Transfer def
@@ -66,4 +76,48 @@ def approve(spender: address, amount: uint256) -> bool:
     
     return True
 
+
+{%- if cookiecutter.burnable == 'y' %} 
+
+#Burnable
+@external
+def burn(amount: uint256):
+    """
+    @notice Burns the supplied amount of tokens from the sender wallet.
+    @param amount The amount of token to be burned.
+    """
+    self.balanceOf[msg.sender] -= amount
+    self.totalSupply -= amount
+
+    log Transfer(msg.sender, ZERO_ADDRESS, amount)
+{%- endif %}
+
+{%- if cookiecutter.owner == "y" %} 
+
+#Mint
+@external
+def mint(receiver: address, amount: uint256) -> bool:
+    """
+    @notice Function to mint tokens
+    @param receiver The address that will receive the minted tokens.
+    @param amount The amount of tokens to mint.
+    @return A boolean that indicates if the operation was successful.
+    """
+    assert msg.sender == self.owner or self.isMinter[msg.sender], "Access is denied."
+    
+
+    self.totalSupply += amount
+    self.balanceOf[receiver] += amount
+
+    log Transfer(ZERO_ADDRESS, receiver, amount)
+    return True
+{%- endif %}
+
+{%- if cookiecutter.minter == "y" %}
+
+@external
+def addMinter(minter: address):
+    assert msg.sender == self.owner
+    self.isMinter[msg.sender] = True
+{%- endif %}
 

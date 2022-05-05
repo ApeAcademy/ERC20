@@ -1,14 +1,12 @@
 {
-    "project_name": "token-name",
-    "token_name": "Test Token",
+    "project_name": "TestProject",
+    "smart_contract_file_name": "vyperToken",
+    "token_name": "TokenTest",
     "token_symbol": "TKN",
     "token_decimals": "18",
-    "premint": "n",
+    "premint": "y",
     "premint_amount": "1000",
-    "burnable": "n",
-    "pausable": "n",
-    "permit": "n",
-    "votes": "n",
-    "flashminting": "n",
-    "snapshot": "n"
+    "owner": "y",
+    "minter": "y",
+    "burnable": "y"
 }
