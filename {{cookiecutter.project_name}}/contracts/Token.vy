@@ -34,8 +34,8 @@ isMinter: public(HashMap[address, bool])
 @external
 def __init__():
     self.owner = msg.sender
-    self.totalSupply = 1000
-    self.balanceOf[msg.sender] = {{cookiecutter.premint_amount}}
+    self.totalSupply = {{cookiecutter.premint_amount}}
+    self.balanceOf[msg.sender] = 1000
 {%- endif %}
 
 # Transfer def
