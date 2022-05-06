@@ -35,7 +35,7 @@ isMinter: public(HashMap[address, bool])
 def __init__():
     self.owner = msg.sender
     self.totalSupply = 1000
-    self.balanceOf[msg.sender] = 1000
+    self.balanceOf[msg.sender] = {{cookiecutter.premint_amount}}
 {%- endif %}
 
 # Transfer def
