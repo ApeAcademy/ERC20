@@ -13,11 +13,6 @@ balanceOf: public(HashMap[address, uint256])
 allowance: public(HashMap[address ,HashMap[address, uint256]])
 
 # Events
-# 3 params, indexed means that params is index by the eth note client, you can trigger 
-# you can filter on indexed
-# doesnt havr to run compuation
-# so you can iterate and look at data
-# log handlers for every transfer and iterate and filter
 event Transfer:
     sender: indexed(address)
     receiver: indexed(address)
@@ -35,6 +30,7 @@ isMinter: public(HashMap[address, bool])
 
     
 {%- if cookiecutter.premint == 'y' %} 
+
 @external
 def __init__():
     self.owner = msg.sender

@@ -8,4 +8,4 @@ def owner(accounts):
 
 @pytest.fixture
 def token(owner, project):
-    return owner.deploy(project.{{cookiecutter.smart_contract_file_name}})
+    return owner.deploy(project.Token)

@@ -1,6 +1,5 @@
 {
     "project_name": "TestProject",
-    "smart_contract_file_name": "vyperToken",
     "token_name": "TokenTest",
     "token_symbol": "TKN",
     "token_decimals": "18",
