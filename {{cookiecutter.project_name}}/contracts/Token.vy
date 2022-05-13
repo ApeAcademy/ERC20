@@ -47,7 +47,7 @@ def transfer(receiver: address, amount: uint256) -> bool:
     self.balanceOf[receiver] += amount
 
     log Transfer(msg.sender, receiver, amount)
-
+# should log error of sender is not able to do transfer
     return True
 
 # Transfer from
