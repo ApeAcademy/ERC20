@@ -3,35 +3,36 @@ from inspect import signature
 import ape
 import eip712
 
-
 #Standard test comes from the interpretation of EIP-20 
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
-# Test inital state of the contract
 def test_initial_state(token, owner):
+    """
+    Test inital state of the contract.
+    """
     # Check the token meta matches the deployment 
-    assert token.name() == "Token"
-    assert token.symbol() == "TKN"
-    assert token.decimals() == 18
+    #token.method_name() has access to all the methods in the smart contract.
+    assert token.name() == {{cookiecutter.token_name}}
+    assert token.symbol() == {{cookiecutter.token_symbol}}
+    assert token.decimals() == {{cookiecutter.token_decimals}}
 
     # Check of intial state of authorization
     assert token.owner() == owner
 
     # Check intial balance of tokens
+{%- if cookiecutter.premint == 'y' %}
+    assert token.totalSupply() == {{cookiecutter.premint_amount}}
+    assert token.balanceOf(owner) == {{cookiecutter.premint_amount}} 
+{%- else %}
     assert token.totalSupply() == 1000
     assert token.balanceOf(owner) == 1000 
+{%- endif %}
 
-#Test Transfer
-# Transfer value of amount to an address
-# Must fire the transfer event
-# Should throw an error of balance of sender does not have enough
-def test_transfer(token, owner, accounts) -> bool:
+def test_transfer(token, owner, accounts):
     """
-    token call all the methods on the token fixture. because ape is awesome
-    ape python interface to python smart contract.
-
-    for example you wan to test transfer
-    
+    Transfer must transfer an amount to an address.
+    Must fire Transfer Event.
+    Should throw an error of balance if sender does not have enough.
     """
     receiver = accounts[1]
 
@@ -41,18 +42,16 @@ def test_transfer(token, owner, accounts) -> bool:
     receiver_balance = token.balanceOf(receiver) 
     assert receiver_balance == 0
 
-
+#token.method_name() has access to all the methods in the smart contract.
     tx = token.transfer(receiver, 100, sender=owner)
-    # Callers MUST handle false from returns (bool success). 
-    # Callers MUST NOT assume that false is never returned!
-    #assert tx.return_value == True
 
+# validate that Transfer Log is correct
+#https://docs.apeworx.io/ape/stable/methoddocs/api.html?highlight=decode#ape.api.networks.EcosystemAPI.decode_logs
     logs = list(tx.decode_logs(token.Transfer))
     assert len(logs) == 1
     assert logs[0].sender == owner
     assert logs[0].receiver == receiver
     assert logs[0].amount == 100
-#https://docs.apeworx.io/ape/stable/methoddocs/api.html?highlight=decode#ape.api.networks.EcosystemAPI.decode_logs
 
 
     receiver_balance = token.balanceOf(receiver) 
@@ -62,22 +61,24 @@ def test_transfer(token, owner, accounts) -> bool:
     assert owner_balance == 900
 
 
-    #expected insufficient funds failure
+    # Expected insufficient funds failure
+    # ape.reverts: Regress the current call using the given snapshot ID. 
+    # Allows developers to go back to a previous state.
+    # https://docs.apeworx.io/ape/stable/methoddocs/api.html?highlight=revert
     with ape.reverts():
         token.transfer(owner, 200, sender=receiver)
     
 #Note Transfers of 0 values MUST be treated as normal transfers 
 # and fire the Transfer event.
     tx = token.transfer(owner, 0, sender=owner)
-    #assert tx.return_value == True
 
 
-#This standard provides basic functionality:
-# to transfer tokens, 
-# as well as allow tokens to be approved 
-# so they can be spent by another on-chain third party.
 def test_transfer_from(token, owner, accounts):
-
+    """
+    Transfer tokens to an address.
+    Transfer operator may not be owner.
+    Approve must be valid to be a spender.
+    """
     receiver, spender = accounts[1:3]
 
     owner_balance = token.balanceOf(owner)
@@ -91,9 +92,8 @@ def test_transfer_from(token, owner, accounts):
         token.transferFrom(owner, receiver, 300, sender=spender)
 
         
-    #get approval for allowance from owner
+    # get approval for allowance from owner
     tx = token.approve(spender, 300, sender=owner)
-    #assert tx.return_value == True
 
     logs = list(tx.decode_logs(token.Approval))
     assert len(logs) == 1
@@ -104,8 +104,7 @@ def test_transfer_from(token, owner, accounts):
     assert token.allowance(owner,spender) == 300
 
     # with auth use the allowance to send to receiver via spender(operator)
-    tx = token.transferFrom(owner, receiver, 200, sender=spender)    
-    #assert tx.return_value == True
+    tx = token.transferFrom(owner, receiver, 200, sender=spender)
 
     logs = list(tx.decode_logs(token.Transfer))
     assert len(logs) == 1
@@ -120,31 +119,101 @@ def test_transfer_from(token, owner, accounts):
         token.transferFrom(owner, receiver, 200, sender=spender)
     
 
-    # transferFrom 100
+    # transferFrom 100 tokens
     token.transferFrom(owner, receiver, 100, sender=spender) 
     assert token.balanceOf(spender) == 0
     assert token.balanceOf(receiver) == 300
     assert token.balanceOf(owner) == 700
 
 
+def test_approve(token, owner, accounts):
+    """
+    Check the authorization of an operator(spender).
+    Check the logs of Approve.
+    """
+    spender = accounts[1]
 
-#Test Approve
-# Check the auth of an operator
-# set auth balance to 0 and check to make sure no attacks vectors
-#  THOUGH The contract itself shouldn’t enforce it, 
-# to allow backwards compatibility with contracts deployed before
-def test_approve(token, owner):
-    pass
-    #UC 1no one can send a token on you behalf
-    #UC 2 any approved op cannot send more than auth amount
-    # check logs
-    # check the return value
-    # check how much is allowed to send
-# allowance:
-# Returns the amount which _spender is still allowed to withdraw from _owner.
+    tx = token.approve(spender, 300, sender=owner)
 
-#Test Permit:
+    logs = list(tx.decode_logs(token.Approval))
+    assert len(logs) == 1
+    assert logs[0].owner == owner
+    assert logs[0].spender == spender
+    assert logs[0].amount == 300
+    
+    assert token.allowance(owner,spender) == 300
 
+    
+    #Set auth balance to 0 and check to make sure no attacks vectors
+    #THOUGH The contract itself shouldn’t enforce it, 
+    #to allow backwards compatibility with contracts deployed before
+    tx = token.approve(spender, 0, sender=owner)
+
+    logs = list(tx.decode_logs(token.Approval))
+    assert len(logs) == 1
+    assert logs[0].owner == owner
+    assert logs[0].spender == spender
+    assert logs[0].amount == 0
+    
+    assert token.allowance(owner,spender) == 0
+
+{%- if cookiecutter.mintable == 'y' %}
+def test_mint(token, owner, accounts):
+    """
+    Create an approved amount of tokens.
+    """
+    receiver = accounts[1]
+
+    totalSupply = token.totalSupply()
+    assert totalSupply == 1000
+
+    receiver_balance = token.balanceOf(receiver) 
+    assert receiver_balance == 0
+
+    tx = token.mint(receiver, 420, sender=owner)
+
+    logs = list(tx.decode_logs(token.Transfer))
+    assert len(logs) == 1
+    assert logs[0].sender == owner
+    assert logs[0].receiver == receiver
+    assert logs[0].amount == 420
+
+    receiver_balance = token.balanceOf(receiver) 
+    assert receiver_balance == 420
+
+    totalSupply = token.totalSupply()
+    assert totalSupply == 1420
+{%- endif %}
+    
+
+{%- if cookiecutter.burnable == 'y' %}
+def test_mint(token, owner):
+    """
+    Burn/Send amount of tokens to ZERO Address.
+    """
+
+    totalSupply = token.totalSupply()
+    assert totalSupply == 1000
+
+    owner_balance = token.balanceOf(owner) 
+    assert owner_balance == 1000
+
+    tx = token.burn(420, sender=owner)
+
+    logs = list(tx.decode_logs(token.Transfer))
+    assert len(logs) == 1
+    assert logs[0].sender == owner
+    assert logs[0].amount == 420
+
+    owner_balance = token.balanceOf(owner) 
+    assert owner_balance == 580
+
+    totalSupply = token.totalSupply()
+    assert totalSupply == 580
+{%- endif %}
+
+{%- if cookiecutter.permitable == 'y' %}
+#Test Permitpip
 class Permit(eip712.EIP712Message):
     owner: "address"
     spender: "address"
@@ -180,6 +249,6 @@ def test_permit(chain,token,owner):
     token.permit(owner, spender, amount, deadline, signature, sender=spender)
 
     assert token.allowance(owner,spender) == 100
+{%- endif %}
 
-    # the permit allows you to approve
 
