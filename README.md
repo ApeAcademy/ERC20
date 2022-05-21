@@ -1,3 +1,3 @@
-# Token Template
+# Erc20 Token Template
 
 author Apeworx
