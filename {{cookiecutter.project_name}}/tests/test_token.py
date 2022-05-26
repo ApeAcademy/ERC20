@@ -12,8 +12,8 @@ def test_initial_state(token, owner):
     """
     # Check the token meta matches the deployment 
     #token.method_name() has access to all the methods in the smart contract.
-    assert token.name() == {{cookiecutter.token_name}}
-    assert token.symbol() == {{cookiecutter.token_symbol}}
+    assert token.name() == "{{cookiecutter.token_name}}"
+    assert token.symbol() == "{{cookiecutter.token_symbol}}"
     assert token.decimals() == {{cookiecutter.token_decimals}}
 
     # Check of intial state of authorization
