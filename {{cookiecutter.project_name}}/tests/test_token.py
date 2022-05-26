@@ -1,7 +1,7 @@
-from ctypes import addressof
-from inspect import signature
 import ape
+{%- if cookiecutter.permitable == 'y' %}
 import eip712
+{%- endif %}
 
 #Standard test comes from the interpretation of EIP-20 
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
