@@ -1,0 +1,14 @@
+{
+  "cookiecutter": {
+    "project_name": "Mintable",
+    "token_name": "MyToken",
+    "token_symbol": "TEST",
+    "token_decimals": "12",
+    "premint": "n",
+    "owner": "y",
+    "minter_role": "y",
+    "mintable": "y",
+    "burnable": "n",
+    "permitable": "n"
+  }
+}
