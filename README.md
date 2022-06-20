@@ -1,3 +1,18 @@
-# Erc20 Token Template
+# Ape Academy ERC20 template
 
-author Apeworx
+Quick and easy way to build a Token (powered by ApeWorX)
+
+## Usage
+
+NOTE: Make sure to have the template plugin installed first
+
+```sh
+$ ape template gh:ApeAcademy/ERC20
+$ ape test
+```
+
+## Contributing
+
+To contribute to this template, please understand how [cookiecutter](https://www.cookiecutter.io/) works.
+
+To add test cases, define a new test scenario under [tests](./tests).
