@@ -215,6 +215,7 @@ def test_mint(token, owner):
 {%- if cookiecutter.permitable == 'y' %}
 #Test Permitpip
 class Permit(eip712.EIP712Message):
+    _name_: "string" = "Test Permit"
     owner: "address"
     spender: "address"
     value: "uint256"
@@ -222,7 +223,7 @@ class Permit(eip712.EIP712Message):
     deadline: "uint256"
 
 
-def test_permit(chain,token,owner):
+def test_permit(chain, token, owner, accounts):
     """
     validate that expiry is still valid
     permit an address(operator) to send an amount to another address
@@ -231,11 +232,11 @@ def test_permit(chain,token,owner):
     """
     spender = accounts[1]
     amount = 100
-    nonce = token.nonce(owner)
+    nonce = token.nonce
     deadline = chain.pending_timestamp + 60
     assert token.allowance(owner,spender) == 0
     permit = Permit(owner.address, spender.address, amount, nonce, deadline)
-    signature = owner.sign_message(permit.as_signable_message())
+    signature = owner.sign_message(permit.signable_message).encode_rsv()
     
     with ape.reverts():
         token.permit(spender, spender, amount, deadline, signature, sender=spender)
@@ -245,7 +246,7 @@ def test_permit(chain,token,owner):
         token.permit(owner, spender, amount+1, deadline, signature, sender=spender)
     with ape.reverts():
         token.permit(owner, spender, amount, deadline+1, signature, sender=spender)
-    
+
     token.permit(owner, spender, amount, deadline, signature, sender=spender)
 
     assert token.allowance(owner,spender) == 100
