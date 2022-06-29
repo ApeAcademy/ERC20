@@ -232,7 +232,7 @@ def test_permit(chain, token, owner, accounts):
     """
     spender = accounts[1]
     amount = 100
-    nonce = token.nonce
+    nonce = token.nonces(owner)
     deadline = chain.pending_timestamp + 60
     assert token.allowance(owner,spender) == 0
     permit = Permit(owner.address, spender.address, amount, nonce, deadline)
