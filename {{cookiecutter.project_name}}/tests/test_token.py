@@ -210,7 +210,7 @@ def test_mint(token, owner):
 {%- endif %}
 
 {%- if cookiecutter.permitable == 'y' %}
-def test_permit(chain, token, owner, Permit):
+def test_permit(chain, token, owner, accounts, Permit):
     """
     validate that expiry is still valid
     permit an address(operator) to send an amount to another address
@@ -219,11 +219,11 @@ def test_permit(chain, token, owner, Permit):
     """
     spender = accounts[1]
     amount = 100
-    nonce = token.nonce(owner)
+    nonce = token.nonces(owner)
     deadline = chain.pending_timestamp + 60
     assert token.allowance(owner,spender) == 0
     permit = Permit(owner.address, spender.address, amount, nonce, deadline)
-    signature = owner.sign_message(permit.as_signable_message())
+    signature = owner.sign_message(permit.signable_message).encode_rsv()
     
     with ape.reverts():
         token.permit(spender, spender, amount, deadline, signature, sender=spender)
