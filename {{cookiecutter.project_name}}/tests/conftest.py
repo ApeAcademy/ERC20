@@ -1,4 +1,24 @@
 import pytest
+{%- if cookiecutter.permitable == 'y' %}
+from eip712.messages import EIP712Message
+
+
+@pytest.fixture(scope="session")
+def Permit(chain, token):
+    class Permit(EIP712Message):
+        _name_: "string" = "{{ cookiecutter.token_name }}"
+        _version_: "string" = "1.0"
+        _chainId_: "uint256" = chain.chain_id
+        _verifyingContract_: "address" = token.address
+
+        owner: "address"
+        spender: "address"
+        value: "uint256"
+        nonce: "uint256"
+        deadline: "uint256"
+
+    return Permit
+{%- endif %}
 
 
 @pytest.fixture(scope="session")

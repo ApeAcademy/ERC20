@@ -1,7 +1,4 @@
 import ape
-{%- if cookiecutter.permitable == 'y' %}
-from eip712.messages import EIP712Message
-{%- endif %}
 
 #Standard test comes from the interpretation of EIP-20 
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
@@ -213,16 +210,7 @@ def test_mint(token, owner):
 {%- endif %}
 
 {%- if cookiecutter.permitable == 'y' %}
-#Test Permitpip
-class Permit(eip712.EIP712Message):
-    owner: "address"
-    spender: "address"
-    value: "uint256"
-    nonce: "uint256"
-    deadline: "uint256"
-
-
-def test_permit(chain,token,owner):
+def test_permit(chain, token, owner, Permit):
     """
     validate that expiry is still valid
     permit an address(operator) to send an amount to another address
