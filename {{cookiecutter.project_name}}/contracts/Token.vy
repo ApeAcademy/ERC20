@@ -12,7 +12,7 @@ DECIMALS: constant(uint8) = {{cookiecutter.token_decimals}}
 # ERC20 State Variables
 totalSupply: public(uint256)
 balanceOf: public(HashMap[address, uint256])
-allowance: public(HashMap[address ,HashMap[address, uint256]])
+allowance: public(HashMap[address, HashMap[address, uint256]])
 
 # Events
 event Transfer:
@@ -34,8 +34,9 @@ isMinter: public(HashMap[address, bool])
 nonces: public(HashMap[address, uint256])
 DOMAIN_SEPARATOR: public(bytes32)
 DOMAIN_TYPE_HASH: constant(bytes32) = keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
-PERMIT_TYPE_HASH: constant(bytes32) = keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)")
+PERMIT_TYPE_HASH: constant(bytes32) = keccak256('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)')
 {%- endif %}
+
 
 @external
 def __init__():
@@ -58,8 +59,8 @@ def __init__():
             _abi_encode(chain.id, self)
         )
     )
-{%- endif %}
 
+{%- endif %}
 @pure
 @external
 def name() -> String[20]:
@@ -91,7 +92,6 @@ def transferFrom(sender:address, receiver: address, amount: uint256) -> bool:
 
     log Transfer(sender, receiver, amount)
 
-
     return True
 
 @external
@@ -106,7 +106,6 @@ def approve(spender: address, amount: uint256) -> bool:
     
     return True
 
-
 {%- if cookiecutter.burnable == 'y' %} 
 @external
 def burn(amount: uint256):
@@ -118,8 +117,8 @@ def burn(amount: uint256):
     self.totalSupply -= amount
 
     log Transfer(msg.sender, ZERO_ADDRESS, amount)
+    
 {%- endif %}
-
 {%- if cookiecutter.mintable == "y" %} 
 @external
 def mint(receiver: address, amount: uint256) -> bool:
@@ -140,16 +139,15 @@ def mint(receiver: address, amount: uint256) -> bool:
 
     log Transfer(ZERO_ADDRESS, receiver, amount)
     return True
+    
 {%- endif %}
-
 {%- if cookiecutter.minter_role == "y" %}
-
 @external
 def addMinter(minter: address):
     assert msg.sender == self.owner
     self.isMinter[msg.sender] = True
-{%- endif %}
 
+{%- endif %}
 {%- if cookiecutter.permitable == "y" %}
 @external
 def permit(owner: address, spender: address, amount: uint256, expiry: uint256, signature: Bytes[65]) -> bool:
