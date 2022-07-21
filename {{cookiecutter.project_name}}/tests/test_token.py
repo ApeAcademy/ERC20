@@ -1,6 +1,6 @@
 import ape
 {%- if cookiecutter.permitable == 'y' %}
-import eip712
+from eip712.messages import EIP712Message
 {%- endif %}
 
 #Standard test comes from the interpretation of EIP-20 
