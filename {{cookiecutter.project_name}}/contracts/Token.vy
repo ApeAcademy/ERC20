@@ -138,6 +138,7 @@ def mint(receiver: address, amount: uint256) -> bool:
     self.balanceOf[receiver] += amount
 
     log Transfer(ZERO_ADDRESS, receiver, amount)
+    
     return True
     
 {%- endif %}
@@ -189,5 +190,6 @@ def permit(owner: address, spender: address, amount: uint256, expiry: uint256, s
     self.allowance[owner][spender] = amount
     self.nonces[owner] = nonce + 1
     log Approval(owner, spender, amount)
+    
     return True
 {%- endif %}
