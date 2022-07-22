@@ -25,7 +25,7 @@ def test_initial_state(token, owner):
     assert token.balanceOf(owner) == 1000 
 {%- endif %}
 
-def test_transfer(token, owner, reciever):
+def test_transfer(token, owner, receiver):
     """
     Transfer must transfer an amount to an address.
     Must trigger Transfer Event.
@@ -75,7 +75,11 @@ def test_transfer_from(token, owner, accounts):
     receiver, spender = accounts[1:3]
 
     owner_balance = token.balanceOf(owner)
-    assert owner_balance == 1000
+{%- if cookiecutter.premint == 'y' %}
+    assert owner_balance == {{cookiecutter.premint_amount}}
+{%- else %}
+    assert owner_balance == == 1000
+{%- endif %}
 
     receiver_balance = token.balanceOf(receiver) 
     assert receiver_balance == 0
@@ -117,12 +121,12 @@ def test_transfer_from(token, owner, accounts):
     assert token.balanceOf(owner) == 700
 
 
-def test_approve(token, owner, reciever):
+def test_approve(token, owner, receiver):
     """
     Check the authorization of an operator(spender).
     Check the logs of Approve.
     """
-    spender = reciever
+    spender = receiver
 
     tx = token.approve(spender, 300, sender=owner)
 
@@ -199,29 +203,28 @@ def test_burn(token, owner):
     
 {%- endif %}
 {%- if cookiecutter.permitable == 'y' %}
-def test_permit(chain, token, owner, accounts, Permit):
+def test_permit(chain, token, owner, receiver, Permit):
     """
     Validate permit method for incorrect ownership, values, and timing
     """
-    spender = reciever
     amount = 100
     nonce = token.nonces(owner)
     deadline = chain.pending_timestamp + 60
     assert token.allowance(owner, spender) == 0
-    permit = Permit(owner.address, spender.address, amount, nonce, deadline)
+    permit = Permit(owner.address, receiver.address, amount, nonce, deadline)
     signature = owner.sign_message(permit.signable_message).encode_rsv()
     
     with ape.reverts():
-        token.permit(spender, spender, amount, deadline, signature, sender=spender)
+        token.permit(receiver, receiver, amount, deadline, signature, sender=receiver)
     with ape.reverts():
-        token.permit(owner, owner, amount, deadline, signature, sender=spender)
+        token.permit(owner, owner, amount, deadline, signature, sender=receiver)
     with ape.reverts():
-        token.permit(owner, spender, amount + 1, deadline, signature, sender=spender)
+        token.permit(owner, receiver, amount + 1, deadline, signature, sender=receiver)
     with ape.reverts():
-        token.permit(owner, spender, amount, deadline + 1, signature, sender=spender)
+        token.permit(owner, receiver, amount, deadline + 1, signature, sender=receiver)
     
-    token.permit(owner, spender, amount, deadline, signature, sender=spender)
+    token.permit(owner, receiver, amount, deadline, signature, sender=receiver)
 
-    assert token.allowance(owner, spender) == 100
+    assert token.allowance(owner, receiver) == 100
     
 {%- endif %}
