@@ -20,17 +20,17 @@ event Transfer:
     receiver: indexed(address)
     amount: uint256
 
-event Approval: 
+event Approval:
     owner: indexed(address)
     spender: indexed(address)
-    amount: uint256 
+    amount: uint256
 
 owner: public(address)
 {%- if cookiecutter.minter_role == "y" %}
 isMinter: public(HashMap[address, bool])
 {%- endif %}
+{%- if cookiecutter.permitable == 'y' %}
 
-{%- if cookiecutter.permitable == 'y' %} 
 nonces: public(HashMap[address, uint256])
 DOMAIN_SEPARATOR: public(bytes32)
 DOMAIN_TYPE_HASH: constant(bytes32) = keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
@@ -41,15 +41,15 @@ PERMIT_TYPE_HASH: constant(bytes32) = keccak256('Permit(address owner,address sp
 @external
 def __init__():
     self.owner = msg.sender
-{%- if cookiecutter.premint == 'y' %} 
+{%- if cookiecutter.premint == 'y' %}
     self.totalSupply = {{cookiecutter.premint_amount}}
     self.balanceOf[msg.sender] = {{cookiecutter.premint_amount}}
 {%- else %}
     self.totalSupply = 1000
     self.balanceOf[msg.sender] = 1000
 {%- endif %}
+{%- if cookiecutter.permitable == 'y' %}
 
-{%- if cookiecutter.permitable == 'y' %} 
     # EIP-712
     self.DOMAIN_SEPARATOR = keccak256(
         concat(
@@ -59,24 +59,28 @@ def __init__():
             _abi_encode(chain.id, self)
         )
     )
-
 {%- endif %}
+
+
 @pure
 @external
 def name() -> String[20]:
     return NAME
 
+
 @pure
-@external 
+@external
 def symbol() -> String[5]:
     return SYMBOL
+
 
 @pure
 @external
 def decimals() -> uint8:
     return DECIMALS
 
-@external 
+
+@external
 def transfer(receiver: address, amount: uint256) -> bool:
     self.balanceOf[msg.sender] -= amount
     self.balanceOf[receiver] += amount
@@ -84,7 +88,8 @@ def transfer(receiver: address, amount: uint256) -> bool:
     log Transfer(msg.sender, receiver, amount)
     return True
 
-@external 
+
+@external
 def transferFrom(sender:address, receiver: address, amount: uint256) -> bool:
     self.allowance[sender][msg.sender] -= amount
     self.balanceOf[sender] -= amount
@@ -93,6 +98,7 @@ def transferFrom(sender:address, receiver: address, amount: uint256) -> bool:
     log Transfer(sender, receiver, amount)
 
     return True
+
 
 @external
 def approve(spender: address, amount: uint256) -> bool:
@@ -103,10 +109,11 @@ def approve(spender: address, amount: uint256) -> bool:
     self.allowance[msg.sender][spender] = amount
 
     log Approval(msg.sender, spender, amount)
-    
-    return True
 
-{%- if cookiecutter.burnable == 'y' %} 
+    return True
+{%- if cookiecutter.burnable == 'y' %}
+
+
 @external
 def burn(amount: uint256):
     """
@@ -117,9 +124,10 @@ def burn(amount: uint256):
     self.totalSupply -= amount
 
     log Transfer(msg.sender, ZERO_ADDRESS, amount)
-    
 {%- endif %}
-{%- if cookiecutter.mintable == "y" %} 
+{%- if cookiecutter.mintable == "y" %}
+
+
 @external
 def mint(receiver: address, amount: uint256) -> bool:
     """
@@ -138,18 +146,20 @@ def mint(receiver: address, amount: uint256) -> bool:
     self.balanceOf[receiver] += amount
 
     log Transfer(ZERO_ADDRESS, receiver, amount)
-    
+
     return True
-    
 {%- endif %}
 {%- if cookiecutter.minter_role == "y" %}
+
+
 @external
 def addMinter(minter: address):
     assert msg.sender == self.owner
     self.isMinter[msg.sender] = True
-
 {%- endif %}
 {%- if cookiecutter.permitable == "y" %}
+
+
 @external
 def permit(owner: address, spender: address, amount: uint256, expiry: uint256, signature: Bytes[65]) -> bool:
     """
@@ -190,6 +200,6 @@ def permit(owner: address, spender: address, amount: uint256, expiry: uint256, s
     self.allowance[owner][spender] = amount
     self.nonces[owner] = nonce + 1
     log Approval(owner, spender, amount)
-    
+
     return True
 {%- endif %}
