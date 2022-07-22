@@ -4,6 +4,7 @@ import pytest
 # Standard test comes from the interpretation of EIP-20 
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
+
 def test_initial_state(token, owner):
     """
     Test inital state of the contract.
@@ -25,6 +26,7 @@ def test_initial_state(token, owner):
     assert token.totalSupply() == 1000
     assert token.balanceOf(owner) == 1000 
 {%- endif %}
+
 
 def test_transfer(token, owner, receiver):
     """
@@ -73,6 +75,7 @@ def test_transfer(token, owner, receiver):
     # NOTE: Transfers of 0 values MUST be treated as normal transfers 
     # and trigger a Transfer event.
     tx = token.transfer(owner, 0, sender=owner)
+
 
 def test_transfer_from(token, owner, accounts):
     """
@@ -131,6 +134,7 @@ def test_transfer_from(token, owner, accounts):
     assert token.balanceOf(owner) == 700
 {%- endif %}
 
+
 def test_approve(token, owner, receiver):
     """
     Check the authorization of an operator(spender).
@@ -160,8 +164,8 @@ def test_approve(token, owner, receiver):
     assert logs[0].amount == 0
     
     assert token.allowance(owner, spender) == 0
-
 {%- if cookiecutter.mintable == 'y' %}
+
 
 def test_mint(token, owner, receiver):
     """
@@ -186,9 +190,9 @@ def test_mint(token, owner, receiver):
 
     totalSupply = token.totalSupply()
     assert totalSupply == 1420
-    
 {%- endif %}
 {%- if cookiecutter.burnable == 'y' %}
+
 
 def test_burn(token, owner):
     """
@@ -212,9 +216,9 @@ def test_burn(token, owner):
 
     totalSupply = token.totalSupply()
     assert totalSupply == 580
-    
 {%- endif %}
 {%- if cookiecutter.permitable == 'y' %}
+    
 
 @pytest.mark.skip(reason="gas estimation reverts")
 def test_permit(chain, token, owner, receiver, Permit):
@@ -240,5 +244,4 @@ def test_permit(chain, token, owner, receiver, Permit):
     token.permit(owner, receiver, amount, deadline, signature, sender=receiver)
 
     assert token.allowance(owner, receiver) == 100
-    
 {%- endif %}
