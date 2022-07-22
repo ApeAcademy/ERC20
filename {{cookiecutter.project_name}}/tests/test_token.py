@@ -1,7 +1,4 @@
 import ape
-{%- if cookiecutter.permitable == 'y' %}
-from eip712.messages import EIP712Message
-{%- endif %}
 
 # Standard test comes from the interpretation of EIP-20 
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
@@ -202,26 +199,17 @@ def test_burn(token, owner):
     
 {%- endif %}
 {%- if cookiecutter.permitable == 'y' %}
-# Test Permit EIP
-class Permit(eip712.EIP712Message):
-    owner: "address"
-    spender: "address"
-    value: "uint256"
-    nonce: "uint256"
-    deadline: "uint256"
-
-
-def test_permit(chain, token, owner, reciever):
+def test_permit(chain, token, owner, accounts, Permit):
     """
     Validate permit method for incorrect ownership, values, and timing
     """
     spender = reciever
     amount = 100
-    nonce = token.nonce
+    nonce = token.nonces(owner)
     deadline = chain.pending_timestamp + 60
     assert token.allowance(owner, spender) == 0
     permit = Permit(owner.address, spender.address, amount, nonce, deadline)
-    signature = owner.sign_message(permit.as_signable_message())
+    signature = owner.sign_message(permit.signable_message).encode_rsv()
     
     with ape.reverts():
         token.permit(spender, spender, amount, deadline, signature, sender=spender)
