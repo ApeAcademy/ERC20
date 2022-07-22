@@ -32,7 +32,11 @@ def test_transfer(token, owner, receiver):
     Should throw an error of balance if sender does not have enough funds.
     """
     owner_balance = token.balanceOf(owner)
+{%- if cookiecutter.premint == 'y' %}
+    assert owner_balance == {{cookiecutter.premint_amount}}
+{%- else %}
     assert owner_balance == 1000
+{%- endif %}
 
     receiver_balance = token.balanceOf(receiver) 
     assert receiver_balance == 0
@@ -52,7 +56,11 @@ def test_transfer(token, owner, receiver):
     assert receiver_balance == 100
 
     owner_balance = token.balanceOf(owner)
+{%- if cookiecutter.premint == 'y' %}
+    assert owner_balance == {{cookiecutter.premint_amount}} - 100
+{%- else %}
     assert owner_balance == 900
+{%- endif %}
 
     # Expected insufficient funds failure
     # ape.reverts: Reverts the current call using a given snapshot ID. 
@@ -78,7 +86,7 @@ def test_transfer_from(token, owner, accounts):
 {%- if cookiecutter.premint == 'y' %}
     assert owner_balance == {{cookiecutter.premint_amount}}
 {%- else %}
-    assert owner_balance == == 1000
+    assert owner_balance == 1000
 {%- endif %}
 
     receiver_balance = token.balanceOf(receiver) 
@@ -98,7 +106,7 @@ def test_transfer_from(token, owner, accounts):
     assert logs[0].spender == spender
     assert logs[0].amount == 300
     
-    assert token.allowance(owner,spender) == 300
+    assert token.allowance(owner, spender) == 300
 
     # With auth use the allowance to send to receiver via spender(operator)
     tx = token.transferFrom(owner, receiver, 200, sender=spender)
@@ -118,7 +126,11 @@ def test_transfer_from(token, owner, accounts):
     token.transferFrom(owner, receiver, 100, sender=spender) 
     assert token.balanceOf(spender) == 0
     assert token.balanceOf(receiver) == 300
+{%- if cookiecutter.premint == 'y' %}
+    assert token.balanceOf(owner) == {{cookiecutter.premint_amount}} - 300
+{%- else %}
     assert token.balanceOf(owner) == 700
+{%- endif %}
 
 
 def test_approve(token, owner, receiver):
@@ -210,7 +222,7 @@ def test_permit(chain, token, owner, receiver, Permit):
     amount = 100
     nonce = token.nonces(owner)
     deadline = chain.pending_timestamp + 60
-    assert token.allowance(owner, spender) == 0
+    assert token.allowance(owner, receiver) == 0
     permit = Permit(owner.address, receiver.address, amount, nonce, deadline)
     signature = owner.sign_message(permit.signable_message).encode_rsv()
     
