@@ -1,15 +1,14 @@
 {
   "cookiecutter": {
-    "project_name": "Basic",
+    "project_name": "Permitable",
     "token_name": "MyToken",
     "token_symbol": "TEST",
     "token_decimals": "8",
-    "premint": "y",
-    "premint_amount": "1000 * 10 ** 8",
+    "premint": "n",
     "owner": "n",
     "minter_role": "n",
     "mintable": "n",
     "burnable": "n",
-    "permitable": "n"
+    "permitable": "y"
   }
 }
