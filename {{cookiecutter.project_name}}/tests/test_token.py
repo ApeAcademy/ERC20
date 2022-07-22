@@ -74,7 +74,6 @@ def test_transfer(token, owner, receiver):
     # and trigger a Transfer event.
     tx = token.transfer(owner, 0, sender=owner)
 
-
 def test_transfer_from(token, owner, accounts):
     """
     Transfer tokens to an address.
@@ -97,7 +96,6 @@ def test_transfer_from(token, owner, accounts):
     with ape.reverts():
         token.transferFrom(owner, receiver, 300, sender=spender)
 
-        
     # Get approval for allowance from owner
     tx = token.approve(spender, 300, sender=owner)
 
@@ -133,7 +131,6 @@ def test_transfer_from(token, owner, accounts):
     assert token.balanceOf(owner) == 700
 {%- endif %}
 
-
 def test_approve(token, owner, receiver):
     """
     Check the authorization of an operator(spender).
@@ -162,7 +159,7 @@ def test_approve(token, owner, receiver):
     assert logs[0].spender == spender
     assert logs[0].amount == 0
     
-    assert token.allowance(owner,spender) == 0
+    assert token.allowance(owner, spender) == 0
 
 {%- if cookiecutter.mintable == 'y' %}
 def test_mint(token, owner, receiver):
@@ -191,7 +188,6 @@ def test_mint(token, owner, receiver):
     
 {%- endif %}
 {%- if cookiecutter.burnable == 'y' %}
-@pytest.mark.skip(reason="gas estimation fails")
 def test_burn(token, owner):
     """
     Burn/Send amount of tokens to ZERO Address.
