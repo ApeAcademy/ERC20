@@ -9,6 +9,8 @@ jobs:
       matrix:
         template:
         - Basic
+        - Burnable
+        - Permitable
         - Mintable
     steps:
     - uses: actions/checkout@v2
