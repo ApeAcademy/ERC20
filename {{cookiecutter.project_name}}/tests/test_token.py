@@ -178,8 +178,8 @@ def test_mint(token, owner, receiver):
 
     logs = list(tx.decode_logs(token.Transfer))
     assert len(logs) == 1
-    assert logs[0].sender == owner
-    assert logs[0].receiver == receiver
+    assert logs[0].sender == owner.address
+    assert logs[0].receiver == receiver.address
     assert logs[0].amount == 420
 
     receiver_balance = token.balanceOf(receiver) 
