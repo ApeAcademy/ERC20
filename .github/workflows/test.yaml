@@ -13,7 +13,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: ApeWorX/github-action@v1
-    - run: pip install -r requirements.txt
+    - run: pip install --upgrade pip
+    - run: pip install eip712
     - run: ape plugins install -U template
     - run: ape template . --replay-file tests/${{ matrix.template }}.json
     - name: Install plugins
