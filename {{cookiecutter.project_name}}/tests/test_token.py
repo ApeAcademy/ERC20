@@ -162,6 +162,7 @@ def test_approve(token, owner, receiver):
     assert token.allowance(owner, spender) == 0
 
 {%- if cookiecutter.mintable == 'y' %}
+
 def test_mint(token, owner, receiver):
     """
     Create an approved amount of tokens.
@@ -188,6 +189,7 @@ def test_mint(token, owner, receiver):
     
 {%- endif %}
 {%- if cookiecutter.burnable == 'y' %}
+
 def test_burn(token, owner):
     """
     Burn/Send amount of tokens to ZERO Address.
@@ -213,6 +215,7 @@ def test_burn(token, owner):
     
 {%- endif %}
 {%- if cookiecutter.permitable == 'y' %}
+
 @pytest.mark.skip(reason="gas estimation reverts")
 def test_permit(chain, token, owner, receiver, Permit):
     """
