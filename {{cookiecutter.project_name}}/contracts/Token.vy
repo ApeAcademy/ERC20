@@ -96,7 +96,6 @@ def transferFrom(sender:address, receiver: address, amount: uint256) -> bool:
     self.balanceOf[receiver] += amount
 
     log Transfer(sender, receiver, amount)
-
     return True
 
 
@@ -109,13 +108,12 @@ def approve(spender: address, amount: uint256) -> bool:
     self.allowance[msg.sender][spender] = amount
 
     log Approval(msg.sender, spender, amount)
-
     return True
 {%- if cookiecutter.burnable == 'y' %}
 
 
 @external
-def burn(amount: uint256):
+def burn(amount: uint256) -> bool:
     """
     @notice Burns the supplied amount of tokens from the sender wallet.
     @param amount The amount of token to be burned.
@@ -124,6 +122,7 @@ def burn(amount: uint256):
     self.totalSupply -= amount
 
     log Transfer(msg.sender, ZERO_ADDRESS, amount)
+    return True
 {%- endif %}
 {%- if cookiecutter.mintable == "y" %}
 
@@ -146,7 +145,6 @@ def mint(receiver: address, amount: uint256) -> bool:
     self.balanceOf[receiver] += amount
 
     log Transfer(ZERO_ADDRESS, receiver, amount)
-
     return True
 {%- endif %}
 {%- if cookiecutter.minter_role == "y" %}
@@ -199,7 +197,7 @@ def permit(owner: address, spender: address, amount: uint256, expiry: uint256, s
     assert ecrecover(digest, v, r, s) == owner  # dev: invalid signature
     self.allowance[owner][spender] = amount
     self.nonces[owner] = nonce + 1
-    log Approval(owner, spender, amount)
 
+    log Approval(owner, spender, amount)
     return True
 {%- endif %}
