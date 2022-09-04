@@ -198,8 +198,8 @@ def test_add_minter(token, owner, accounts):
     Must trigger MinterAdded Event.
     Must return true when checking if target isMinter
     """
-    assert token.isMinter(target) is False
     target = accounts[1]
+    assert token.isMinter(target) is False
     token.addMinter(target, sender=owner)
     assert token.isMinter(target) is True
 
