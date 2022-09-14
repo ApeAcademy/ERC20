@@ -1,4 +1,5 @@
 {
+    "ERC4626": "y",
     "project_name": "TokenProject",
     "token_name": "TokenTest",
     "token_symbol": "TKN",

@@ -1,8 +1,15 @@
-# @version 0.3.3
+# @version 0.3.4
 
 from vyper.interfaces import ERC20
+{%- if cookiecutter.ERC4626 == 'y' %}
+import ERC4626 as ERC4626
+{%- endif %}
+
 
 implements: ERC20
+{%- if cookiecutter.ERC4626 == 'y' %}
+implements: ERC4626
+{%- endif %}
 
 # ERC20 Token Metadata
 NAME: constant(String[20]) = "{{cookiecutter.token_name}}"
@@ -25,6 +32,26 @@ event Approval:
     spender: indexed(address)
     amount: uint256
 
+{%- if cookiecutter.ERC4626 == 'y' %}
+##### ERC4626 #####
+
+asset: public(ERC20)
+
+event Deposit:
+    depositor: indexed(address)
+    receiver: indexed(address)
+    assets: uint256
+    shares: uint256
+
+event Withdraw:
+    withdrawer: indexed(address)
+    receiver: indexed(address)
+    owner: indexed(address)
+    assets: uint256
+    shares: uint256
+
+{%- endif %}
+
 owner: public(address)
 {%- if cookiecutter.minter_role == "y" %}
 isMinter: public(HashMap[address, bool])
@@ -39,7 +66,7 @@ PERMIT_TYPE_HASH: constant(bytes32) = keccak256('Permit(address owner,address sp
 
 
 @external
-def __init__():
+def __init__({%- if cookiecutter.ERC4626 == 'y' %}asset: ERC20{%- endif %}):
     self.owner = msg.sender
 {%- if cookiecutter.premint == 'y' %}
     self.totalSupply = {{cookiecutter.premint_amount}}
@@ -48,6 +75,11 @@ def __init__():
     self.totalSupply = 1000
     self.balanceOf[msg.sender] = 1000
 {%- endif %}
+
+{%- if cookiecutter.ERC4626 == 'y' %}
+    self.asset = asset
+{%- endif %}
+
 {%- if cookiecutter.permitable == 'y' %}
 
     # EIP-712
@@ -113,6 +145,92 @@ def approve(spender: address, amount: uint256) -> bool:
     return True
 {%- if cookiecutter.burnable == 'y' %}
 
+{%- if cookiecutter.ERC4626 == 'y' %}
+
+@view
+@external
+def totalAssets() -> uint256:
+    return self.asset.balanceOf(self)
+
+
+@view
+@internal
+def _convertToAssets(shareAmount: uint256) -> uint256:
+    totalSupply: uint256 = self.totalSupply
+    if totalSupply == 0:
+        return 0
+
+    # NOTE: `shareAmount = 0` is extremely rare case, not optimizing for it
+    # NOTE: `totalAssets = 0` is extremely rare case, not optimizing for it
+    return shareAmount * self.asset.balanceOf(self) / totalSupply
+
+
+@view
+@external
+def convertToAssets(shareAmount: uint256) -> uint256:
+    return self._convertToAssets(shareAmount)
+
+
+@view
+@internal
+def _convertToShares(assetAmount: uint256) -> uint256:
+    totalSupply: uint256 = self.totalSupply
+    totalAssets: uint256 = self.asset.balanceOf(self)
+    if totalAssets == 0 or totalSupply == 0:
+        return assetAmount  # 1:1 price
+
+    # NOTE: `assetAmount = 0` is extremely rare case, not optimizing for it
+    return assetAmount * totalSupply / totalAssets
+
+
+@view
+@external
+def convertToShares(assetAmount: uint256) -> uint256:
+    return self._convertToShares(assetAmount)
+
+
+@view
+@external
+def maxDeposit(owner: address) -> uint256:
+    return max_value(uint256)
+
+
+@view
+@external
+def previewDeposit(assets: uint256) -> uint256:
+    return self._convertToShares(assets)
+
+
+@external
+def deposit(assets: uint256, receiver: address=msg.sender) -> uint256:
+    shares: uint256 = self._convertToShares(assets)
+    self.asset.transferFrom(msg.sender, self, assets)
+
+    self.totalSupply += shares
+    self.balanceOf[receiver] += shares
+    log Deposit(msg.sender, receiver, assets, shares)
+    return shares
+
+
+@view
+@external
+def maxMint(owner: address) -> uint256:
+    return max_value(uint256)
+
+
+@view
+@external
+def previewMint(shares: uint256) -> uint256:
+    assets: uint256 = self._convertToAssets(shares)
+
+    # NOTE: Vyper does lazy eval on if, so this avoids SLOADs most of the time
+    if assets == 0 and self.asset.balanceOf(self) == 0:
+        return shares  # NOTE: Assume 1:1 price if nothing deposited yet
+
+    return assets
+
+{%- endif %}
+
 
 @external
 def burn(amount: uint256):
@@ -123,11 +241,28 @@ def burn(amount: uint256):
     self.balanceOf[msg.sender] -= amount
     self.totalSupply -= amount
 
-    log Transfer(msg.sender, ZERO_ADDRESS, amount)
+    log Transfer(msg.sender, empty(address), amount)
 {%- endif %}
 {%- if cookiecutter.mintable == "y" %}
 
+{%- if cookiecutter.ERC4626 == 'y' %}
 
+@external
+def mint(shares: uint256, receiver: address=msg.sender) -> uint256:
+    assets: uint256 = self._convertToAssets(shares)
+
+    if assets == 0 and self.asset.balanceOf(self) == 0:
+        assets = shares  # NOTE: Assume 1:1 price if nothing deposited yet
+
+    self.asset.transferFrom(msg.sender, self, assets)
+
+    self.totalSupply += shares
+    self.balanceOf[receiver] += shares
+    log Deposit(msg.sender, receiver, assets, shares)
+    return assets
+
+
+{%- else %}
 @external
 def mint(receiver: address, amount: uint256) -> bool:
     """
@@ -145,12 +280,80 @@ def mint(receiver: address, amount: uint256) -> bool:
     self.totalSupply += amount
     self.balanceOf[receiver] += amount
 
-    log Transfer(ZERO_ADDRESS, receiver, amount)
+    log Transfer(empty(address), receiver, amount)
 
     return True
+    {%- endif %}
 {%- endif %}
-{%- if cookiecutter.minter_role == "y" %}
 
+{%- if cookiecutter.ERC4626 == 'y' %}
+
+@view
+@external
+def maxWithdraw(owner: address) -> uint256:
+    return max_value(uint256)  # real max is `self.asset.balanceOf(self)`
+
+
+@view
+@external
+def previewWithdraw(assets: uint256) -> uint256:
+    shares: uint256 = self._convertToShares(assets)
+
+    # NOTE: Vyper does lazy eval on if, so this avoids SLOADs most of the time
+    if shares == assets and self.totalSupply == 0:
+        return 0  # NOTE: Nothing to redeem
+
+    return shares
+
+
+@external
+def withdraw(assets: uint256, receiver: address=msg.sender, owner: address=msg.sender) -> uint256:
+    shares: uint256 = self._convertToShares(assets)
+
+    # NOTE: Vyper does lazy eval on if, so this avoids SLOADs most of the time
+    if shares == assets and self.totalSupply == 0:
+        raise  # Nothing to redeem
+
+    if owner != msg.sender:
+        self.allowance[owner][msg.sender] -= shares
+
+    self.totalSupply -= shares
+    self.balanceOf[owner] -= shares
+
+    self.asset.transfer(receiver, assets)
+    log Withdraw(msg.sender, receiver, owner, assets, shares)
+    return shares
+
+
+@view
+@external
+def maxRedeem(owner: address) -> uint256:
+    return max_value(uint256)  # real max is `self.totalSupply`
+
+
+@view
+@external
+def previewRedeem(shares: uint256) -> uint256:
+    return self._convertToAssets(shares)
+
+
+@external
+def redeem(shares: uint256, receiver: address=msg.sender, owner: address=msg.sender) -> uint256:
+    if owner != msg.sender:
+        self.allowance[owner][msg.sender] -= shares
+
+    assets: uint256 = self._convertToAssets(shares)
+    self.totalSupply -= shares
+    self.balanceOf[owner] -= shares
+
+    self.asset.transfer(receiver, assets)
+    log Withdraw(msg.sender, receiver, owner, assets, shares)
+    return assets
+
+{%- endif %}
+
+
+{%- if cookiecutter.minter_role == "y" %}
 
 @external
 def addMinter(minter: address):
@@ -173,7 +376,7 @@ def permit(owner: address, spender: address, amount: uint256, expiry: uint256, s
     @param signature A valid secp256k1 signature of Permit by owner encoded as r, s, v.
     @return True, if transaction completes successfully
     """
-    assert owner != ZERO_ADDRESS  # dev: invalid owner
+    assert owner != empty(address)  # dev: invalid owner
     assert expiry == 0 or expiry >= block.timestamp  # dev: permit expired
     nonce: uint256 = self.nonces[owner]
     digest: bytes32 = keccak256(
