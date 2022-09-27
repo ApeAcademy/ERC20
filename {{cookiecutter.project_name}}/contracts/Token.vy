@@ -143,7 +143,6 @@ def approve(spender: address, amount: uint256) -> bool:
     log Approval(msg.sender, spender, amount)
 
     return True
-{%- if cookiecutter.burnable == 'y' %}
 
 {%- if cookiecutter.ERC4626 == 'y' %}
 
@@ -231,7 +230,7 @@ def previewMint(shares: uint256) -> uint256:
 
 {%- endif %}
 
-
+{%- if cookiecutter.burnable == 'y' %}
 @external
 def burn(amount: uint256):
     """
@@ -243,9 +242,8 @@ def burn(amount: uint256):
 
     log Transfer(msg.sender, empty(address), amount)
 {%- endif %}
-{%- if cookiecutter.mintable == "y" %}
 
-{%- if cookiecutter.ERC4626 == 'y' %}
+{%- if cookiecutter.ERC4626 == 'y' % and if cookiecutter.mintable == 'n'}
 
 @external
 def mint(shares: uint256, receiver: address=msg.sender) -> uint256:

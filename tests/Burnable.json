@@ -1,5 +1,6 @@
 {
   "cookiecutter": {
+    "ERC4626": "n",
     "project_name": "Burnable",
     "token_name": "MyToken",
     "token_symbol": "TEST",
