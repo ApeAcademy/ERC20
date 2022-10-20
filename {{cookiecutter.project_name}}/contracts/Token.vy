@@ -82,6 +82,8 @@ def decimals() -> uint8:
 
 @external
 def transfer(receiver: address, amount: uint256) -> bool:
+    assert receiver not in [ZERO_ADDRESS, self]
+
     self.balanceOf[msg.sender] -= amount
     self.balanceOf[receiver] += amount
 
@@ -91,6 +93,8 @@ def transfer(receiver: address, amount: uint256) -> bool:
 
 @external
 def transferFrom(sender:address, receiver: address, amount: uint256) -> bool:
+    assert receiver not in [ZERO_ADDRESS, self]
+
     self.allowance[sender][msg.sender] -= amount
     self.balanceOf[sender] -= amount
     self.balanceOf[receiver] += amount
