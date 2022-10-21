@@ -144,6 +144,7 @@ def mint(receiver: address, amount: uint256) -> bool:
     {%- else %}
     assert msg.sender == self.owner "Access is denied."
     {%- endif %}
+    assert receiver not in [ZERO_ADDRESS, self]
 
     self.totalSupply += amount
     self.balanceOf[receiver] += amount
