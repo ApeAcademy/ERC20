@@ -1,7 +1,7 @@
 {
   "cookiecutter": {
     "ERC4626": "y",
-    "project_name": "ERC4626Projecy",
+    "project_name": "ERC4626Project",
     "token_name": "MyToken",
     "token_symbol": "Token",
     "token_decimals": "18",

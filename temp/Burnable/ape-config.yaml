@@ -1,0 +1,3 @@
+name: Burnable
+plugins:
+  - name: vyper

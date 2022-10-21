@@ -1,3 +1,17 @@
 name: {{ cookiecutter.project_name }}
 plugins:
   - name: vyper
+{%- if cookiecutter.ERC4626 == "y" %}
+  - name: hardhat
+  - name: alchemy
+
+ethereum:
+  default_network: mainnet-fork
+
+hardhat:
+  fork:
+    ethereum:
+      mainnet:
+        upstream_provider: alchemy
+
+{%- endif %}

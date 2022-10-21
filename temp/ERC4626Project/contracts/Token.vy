@@ -1,20 +1,16 @@
 # @version 0.3.4
 
 from vyper.interfaces import ERC20
-{%- if cookiecutter.ERC4626 == 'y' %}
 import ERC4626 as ERC4626
-{%- endif %}
 
 
 implements: ERC20
-{%- if cookiecutter.ERC4626 == 'y' %}
 implements: ERC4626
-{%- endif %}
 
 # ERC20 Token Metadata
-NAME: constant(String[20]) = "{{cookiecutter.token_name}}"
-SYMBOL: constant(String[5]) = "{{cookiecutter.token_symbol}}"
-DECIMALS: constant(uint8) = {{cookiecutter.token_decimals}}
+NAME: constant(String[20]) = "MyToken"
+SYMBOL: constant(String[5]) = "Token"
+DECIMALS: constant(uint8) = 18
 
 # ERC20 State Variables
 totalSupply: public(uint256)
@@ -31,8 +27,6 @@ event Approval:
     owner: indexed(address)
     spender: indexed(address)
     amount: uint256
-
-{%- if cookiecutter.ERC4626 == 'y' %}
 ##### ERC4626 #####
 
 asset: public(ERC20)
@@ -50,48 +44,15 @@ event Withdraw:
     assets: uint256
     shares: uint256
 
-{%- endif %}
-
 owner: public(address)
-{%- if cookiecutter.minter_role == "y" %}
-isMinter: public(HashMap[address, bool])
-{%- endif %}
-{%- if cookiecutter.permitable == 'y' %}
-
-nonces: public(HashMap[address, uint256])
-DOMAIN_SEPARATOR: public(bytes32)
-DOMAIN_TYPE_HASH: constant(bytes32) = keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')
-PERMIT_TYPE_HASH: constant(bytes32) = keccak256('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)')
-{%- endif %}
 
 
 @external
-def __init__({%- if cookiecutter.ERC4626 == 'y' %}asset: ERC20{%- endif %}):
+def __init__(asset: ERC20):
     self.owner = msg.sender
-{%- if cookiecutter.premint == 'y' %}
-    self.totalSupply = {{cookiecutter.premint_amount}}
-    self.balanceOf[msg.sender] = {{cookiecutter.premint_amount}}
-{%- else %}
     self.totalSupply = 1000
     self.balanceOf[msg.sender] = 1000
-{%- endif %}
-
-{%- if cookiecutter.ERC4626 == 'y' %}
     self.asset = asset
-{%- endif %}
-
-{%- if cookiecutter.permitable == 'y' %}
-
-    # EIP-712
-    self.DOMAIN_SEPARATOR = keccak256(
-        concat(
-            DOMAIN_TYPE_HASH,
-            keccak256(NAME),
-            keccak256("1.0"),
-            _abi_encode(chain.id, self)
-        )
-    )
-{%- endif %}
 
 
 @pure
@@ -143,8 +104,6 @@ def approve(spender: address, amount: uint256) -> bool:
     log Approval(msg.sender, spender, amount)
 
     return True
-
-{%- if cookiecutter.ERC4626 == 'y' %}
 
 @view
 @external
@@ -228,22 +187,6 @@ def previewMint(shares: uint256) -> uint256:
 
     return assets
 
-{%- endif %}
-
-{%- if cookiecutter.burnable == 'y' %}
-@external
-def burn(amount: uint256):
-    """
-    @notice Burns the supplied amount of tokens from the sender wallet.
-    @param amount The amount of token to be burned.
-    """
-    self.balanceOf[msg.sender] -= amount
-    self.totalSupply -= amount
-
-    log Transfer(msg.sender, empty(address), amount)
-{%- endif %}
-{%- if cookiecutter.ERC4626 == 'y' and cookiecutter.mintable == 'n'%}
-
 @external
 def mint(shares: uint256, receiver: address=msg.sender) -> uint256:
     assets: uint256 = self._convertToAssets(shares)
@@ -257,33 +200,6 @@ def mint(shares: uint256, receiver: address=msg.sender) -> uint256:
     self.balanceOf[receiver] += shares
     log Deposit(msg.sender, receiver, assets, shares)
     return assets
-
-{%- endif %}
-
-{%- if cookiecutter.ERC4626 == 'n' and cookiecutter.mintable == 'y'%}
-@external
-def mint(receiver: address, amount: uint256) -> bool:
-    """
-    @notice Function to mint tokens
-    @param receiver The address that will receive the minted tokens.
-    @param amount The amount of tokens to mint.
-    @return A boolean that indicates if the operation was successful.
-    """
-    {% if cookiecutter.minter_role == "y" %}
-    assert msg.sender == self.owner or self.isMinter[msg.sender], "Access is denied."
-    {%- else %}
-    assert msg.sender == self.owner "Access is denied."
-    {%- endif %}
-
-    self.totalSupply += amount
-    self.balanceOf[receiver] += amount
-
-    log Transfer(empty(address), receiver, amount)
-
-    return True
-{%- endif %}
-
-{%- if cookiecutter.ERC4626 == 'y' %}
 
 @view
 @external
@@ -346,60 +262,3 @@ def redeem(shares: uint256, receiver: address=msg.sender, owner: address=msg.sen
     self.asset.transfer(receiver, assets)
     log Withdraw(msg.sender, receiver, owner, assets, shares)
     return assets
-
-{%- endif %}
-
-
-{%- if cookiecutter.minter_role == "y" %}
-
-@external
-def addMinter(minter: address):
-    assert msg.sender == self.owner
-    self.isMinter[msg.sender] = True
-{%- endif %}
-{%- if cookiecutter.permitable == "y" %}
-
-
-@external
-def permit(owner: address, spender: address, amount: uint256, expiry: uint256, signature: Bytes[65]) -> bool:
-    """
-    @notice
-        Approves spender by owner's signature to expend owner's tokens.
-        See https://eips.ethereum.org/EIPS/eip-2612.
-    @param owner The address which is a source of funds and has signed the Permit.
-    @param spender The address which is allowed to spend the funds.
-    @param amount The amount of tokens to be spent.
-    @param expiry The timestamp after which the Permit is no longer valid.
-    @param signature A valid secp256k1 signature of Permit by owner encoded as r, s, v.
-    @return True, if transaction completes successfully
-    """
-    assert owner != empty(address)  # dev: invalid owner
-    assert expiry == 0 or expiry >= block.timestamp  # dev: permit expired
-    nonce: uint256 = self.nonces[owner]
-    digest: bytes32 = keccak256(
-        concat(
-            b'\x19\x01',
-            self.DOMAIN_SEPARATOR,
-            keccak256(
-                _abi_encode(
-                    PERMIT_TYPE_HASH,
-                    owner,
-                    spender,
-                    amount,
-                    nonce,
-                    expiry,
-                )
-            )
-        )
-    )
-    # NOTE: signature is packed as r, s, v
-    r: uint256 = convert(slice(signature, 0, 32), uint256)
-    s: uint256 = convert(slice(signature, 32, 32), uint256)
-    v: uint256 = convert(slice(signature, 64, 1), uint256)
-    assert ecrecover(digest, v, r, s) == owner  # dev: invalid signature
-    self.allowance[owner][spender] = amount
-    self.nonces[owner] = nonce + 1
-    log Approval(owner, spender, amount)
-
-    return True
-{%- endif %}
