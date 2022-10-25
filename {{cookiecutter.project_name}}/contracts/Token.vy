@@ -243,6 +243,8 @@ def burn(amount: uint256) -> bool:
     self.totalSupply -= amount
 
     log Transfer(msg.sender, empty(address), amount)
+
+    return True
 {%- endif %}
 {%- if cookiecutter.ERC4626 == 'y' and cookiecutter.mintable == 'n'%}
 
