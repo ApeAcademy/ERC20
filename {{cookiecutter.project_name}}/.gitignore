@@ -4,7 +4,7 @@ TestProject/
 __pycache__/
 *.py[cod]
 *$py.class
-/temp
+temp/
 # C extensions
 *.so
 
