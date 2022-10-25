@@ -1,4 +1,4 @@
-# @version 0.3.4
+# @version 0.3.7
 
 from vyper.interfaces import ERC20
 {%- if cookiecutter.ERC4626 == 'y' %}
