@@ -114,6 +114,8 @@ def decimals() -> uint8:
 
 @external
 def transfer(receiver: address, amount: uint256) -> bool:
+    assert receiver not in [ZERO_ADDRESS, self]
+
     self.balanceOf[msg.sender] -= amount
     self.balanceOf[receiver] += amount
 
@@ -123,12 +125,13 @@ def transfer(receiver: address, amount: uint256) -> bool:
 
 @external
 def transferFrom(sender:address, receiver: address, amount: uint256) -> bool:
+    assert receiver not in [ZERO_ADDRESS, self]
+
     self.allowance[sender][msg.sender] -= amount
     self.balanceOf[sender] -= amount
     self.balanceOf[receiver] += amount
 
     log Transfer(sender, receiver, amount)
-
     return True
 
 
@@ -141,7 +144,6 @@ def approve(spender: address, amount: uint256) -> bool:
     self.allowance[msg.sender][spender] = amount
 
     log Approval(msg.sender, spender, amount)
-
     return True
 
 {%- if cookiecutter.ERC4626 == 'y' %}
@@ -232,7 +234,7 @@ def previewMint(shares: uint256) -> uint256:
 
 {%- if cookiecutter.burnable == 'y' %}
 @external
-def burn(amount: uint256):
+def burn(amount: uint256) -> bool:
     """
     @notice Burns the supplied amount of tokens from the sender wallet.
     @param amount The amount of token to be burned.
@@ -274,6 +276,7 @@ def mint(receiver: address, amount: uint256) -> bool:
     {%- else %}
     assert msg.sender == self.owner "Access is denied."
     {%- endif %}
+    assert receiver not in [ZERO_ADDRESS, self]
 
     self.totalSupply += amount
     self.balanceOf[receiver] += amount
@@ -353,9 +356,11 @@ def redeem(shares: uint256, receiver: address=msg.sender, owner: address=msg.sen
 {%- if cookiecutter.minter_role == "y" %}
 
 @external
-def addMinter(minter: address):
+def addMinter(target: address) -> bool:
     assert msg.sender == self.owner
-    self.isMinter[msg.sender] = True
+    assert target != ZERO_ADDRESS, "Cannot add zero address as minter."
+    self.isMinter[target] = True
+    return True
 {%- endif %}
 {%- if cookiecutter.permitable == "y" %}
 
@@ -399,7 +404,7 @@ def permit(owner: address, spender: address, amount: uint256, expiry: uint256, s
     assert ecrecover(digest, v, r, s) == owner  # dev: invalid signature
     self.allowance[owner][spender] = amount
     self.nonces[owner] = nonce + 1
-    log Approval(owner, spender, amount)
 
+    log Approval(owner, spender, amount)
     return True
 {%- endif %}
