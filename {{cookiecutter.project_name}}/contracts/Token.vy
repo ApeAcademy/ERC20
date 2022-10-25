@@ -114,7 +114,7 @@ def decimals() -> uint8:
 
 @external
 def transfer(receiver: address, amount: uint256) -> bool:
-    assert receiver not in [ZERO_ADDRESS, self]
+    assert receiver not in [empty(address), self]
 
     self.balanceOf[msg.sender] -= amount
     self.balanceOf[receiver] += amount
@@ -125,7 +125,7 @@ def transfer(receiver: address, amount: uint256) -> bool:
 
 @external
 def transferFrom(sender:address, receiver: address, amount: uint256) -> bool:
-    assert receiver not in [ZERO_ADDRESS, self]
+    assert receiver not in [empty(address), self]
 
     self.allowance[sender][msg.sender] -= amount
     self.balanceOf[sender] -= amount
@@ -276,7 +276,7 @@ def mint(receiver: address, amount: uint256) -> bool:
     {%- else %}
     assert msg.sender == self.owner "Access is denied."
     {%- endif %}
-    assert receiver not in [ZERO_ADDRESS, self]
+    assert receiver not in [empty(address), self]
 
     self.totalSupply += amount
     self.balanceOf[receiver] += amount
@@ -358,7 +358,7 @@ def redeem(shares: uint256, receiver: address=msg.sender, owner: address=msg.sen
 @external
 def addMinter(target: address) -> bool:
     assert msg.sender == self.owner
-    assert target != ZERO_ADDRESS, "Cannot add zero address as minter."
+    assert target != empty(address), "Cannot add zero address as minter."
     self.isMinter[target] = True
     return True
 {%- endif %}
