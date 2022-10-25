@@ -12,7 +12,7 @@ jobs:
         - Burnable
         - Permitable
         - Mintable
-        - ERC4626Project
+        - ERC4626
     steps:
     - uses: actions/checkout@v2
     - uses: ApeWorX/github-action@v1
