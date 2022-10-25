@@ -25,7 +25,7 @@ jobs:
         cd ${{ matrix.template }}
         ape plugins install -U .
     - name: install additional dependencies
-      if: matrix . template == "ERC4626"
+      if: matrix.template == "ERC4626"
       run: npm install --save-dev hardhat
     - name: Compile contracts
       run: |
