@@ -4,6 +4,7 @@ plugins:
 {%- if cookiecutter.ERC4626 == "y" %}
   - name: hardhat
   - name: alchemy
+  - name: etherscan
 
 ethereum:
   default_network: mainnet-fork
