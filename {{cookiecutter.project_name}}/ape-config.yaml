@@ -6,6 +6,10 @@ plugins:
   - name: alchemy
   - name: etherscan
 
+# if you installed hardhat for the first time
+# cd into your {{cookiecutter.project_name}} 
+# npm install --save-dev hardhat
+
 ethereum:
   default_network: mainnet-fork
 
