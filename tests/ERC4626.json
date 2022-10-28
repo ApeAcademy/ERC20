@@ -1,15 +1,15 @@
 {
   "cookiecutter": {
-    "ERC4626": "n",
-    "project_name": "Permitable",
+    "ERC4626": "y",
+    "project_name": "ERC4626",
     "token_name": "MyToken",
-    "token_symbol": "TEST",
-    "token_decimals": "8",
+    "token_symbol": "Token",
+    "token_decimals": "18",
     "premint": "n",
     "owner": "n",
     "minter_role": "n",
     "mintable": "n",
     "burnable": "n",
-    "permitable": "y"
+    "permitable": "n"
   }
 }

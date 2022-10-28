@@ -12,6 +12,7 @@ jobs:
         - Burnable
         - Permitable
         - Mintable
+        - ERC4626
     steps:
     - uses: actions/checkout@v2
     - uses: ApeWorX/github-action@v1
@@ -23,11 +24,17 @@ jobs:
       run: |
         cd ${{ matrix.template }}
         ape plugins install -U .
+    - name: install additional dependencies
+      if: ${{ matrix.template == 'ERC4626' }}
+      run: npm install --save-dev hardhat
     - name: Compile contracts
       run: |
         cd ${{ matrix.template }}
         ape compile --size
     - name: Run tests
+      env:
+        ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+        WEB3_ALCHEMY_PROJECT_ID: ${{ secrets.WEB3_ALCHEMY_PROJECT_ID }} 
       run: |
         cd ${{ matrix.template }}
         ape test -s

@@ -1,4 +1,5 @@
 import pytest
+from ape import Contract
 {%- if cookiecutter.permitable == 'y' %}
 from eip712.messages import EIP712Message
 
@@ -29,7 +30,15 @@ def owner(accounts):
 def receiver(accounts):
     return accounts[1]
 
+
+{%- if cookiecutter.ERC4626 == "y" %}
 @pytest.fixture(scope="session")
-def token(owner, project):
-    return owner.deploy(project.Token)
+def asset():
+    return Contract("0x6B175474E89094C44Da98b954EedeAC495271d0F")  # DAI Ethereum Mainnet
+
+
+{%- endif %}
+@pytest.fixture(scope="session")
+def token(owner, project{%- if cookiecutter.ERC4626 == "y" %}, asset{% endif %}):
+    return owner.deploy(project.Token{%- if cookiecutter.ERC4626 == "y" %}, asset{% endif %})
 

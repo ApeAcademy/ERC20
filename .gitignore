@@ -1,10 +1,13 @@
+temp/
 .build/
 TestProject/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-
+temp/
+.temp/
+*/temp
 # C extensions
 *.so
 
