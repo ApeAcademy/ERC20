@@ -6,7 +6,6 @@
     "token_decimals": "18",
     "premint": "y",
     "premint_amount": "1000",
-    "owner": "y",
     "minter_role": "y",
     "mintable": "y",
     "burnable": "y",
