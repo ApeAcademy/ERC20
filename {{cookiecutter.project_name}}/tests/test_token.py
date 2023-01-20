@@ -172,7 +172,7 @@ def test_mint(token, owner, receiver):
     Create an approved amount of tokens.
     """
     totalSupply = token.totalSupply()
-    assert totalSupply == 1000
+    assert totalSupply == {cookiecutter.premint_amount}
 
     receiver_balance = token.balanceOf(receiver)
     assert receiver_balance == 0
@@ -189,7 +189,7 @@ def test_mint(token, owner, receiver):
     assert receiver_balance == 420
 
     totalSupply = token.totalSupply()
-    assert totalSupply == 1420
+    assert totalSupply == {cookiecutter.premint_amount} + 420
 
 
 def test_add_minter(token, owner, accounts):
@@ -222,10 +222,10 @@ def test_burn(token, owner):
     Burn/Send amount of tokens to ZERO Address.
     """
     totalSupply = token.totalSupply()
-    assert totalSupply == 1000
+    assert totalSupply == {cookiecutter.premint_amount}
 
     owner_balance = token.balanceOf(owner)
-    assert owner_balance == 1000
+    assert owner_balance == {cookiecutter.premint_amount}
 
     tx = token.burn(420, sender=owner)
 
@@ -235,10 +235,10 @@ def test_burn(token, owner):
     assert logs[0].amount == 420
 
     owner_balance = token.balanceOf(owner)
-    assert owner_balance == 580
+    assert owner_balance == {cookiecutter.premint_amount} - 420
 
     totalSupply = token.totalSupply()
-    assert totalSupply == 580
+    assert totalSupply == {cookiecutter.premint_amount} - 420
 {%- endif %}
 {%- if cookiecutter.permitable == 'y' %}
 
