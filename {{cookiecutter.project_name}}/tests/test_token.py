@@ -172,24 +172,25 @@ def test_mint(token, owner, receiver):
     Create an approved amount of tokens.
     """
     totalSupply = token.totalSupply()
-    assert totalSupply == {cookiecutter.premint_amount}
+    assert totalSupply == {{cookiecutter.premint_amount}}
 
     receiver_balance = token.balanceOf(receiver)
     assert receiver_balance == 0
 
-    tx = token.mint(receiver, 420, sender=owner)
+    TEST_AMOUNT = 420
+    tx = token.mint(receiver, TEST_AMOUNT, sender=owner)
 
     logs = list(tx.decode_logs(token.Transfer))
     assert len(logs) == 1
     assert logs[0].sender == ZERO_ADDRESS
     assert logs[0].receiver == receiver.address
-    assert logs[0].amount == 420
+    assert logs[0].amount == TEST_AMOUNT
 
     receiver_balance = token.balanceOf(receiver)
-    assert receiver_balance == 420
+    assert receiver_balance == TEST_AMOUNT
 
     totalSupply = token.totalSupply()
-    assert totalSupply == {cookiecutter.premint_amount} + 420
+    assert totalSupply == {{cookiecutter.premint_amount}} + TEST_AMOUNT
 
 
 def test_add_minter(token, owner, accounts):
@@ -222,23 +223,24 @@ def test_burn(token, owner):
     Burn/Send amount of tokens to ZERO Address.
     """
     totalSupply = token.totalSupply()
-    assert totalSupply == {cookiecutter.premint_amount}
+    assert totalSupply == {{cookiecutter.premint_amount}}
 
     owner_balance = token.balanceOf(owner)
-    assert owner_balance == {cookiecutter.premint_amount}
+    assert owner_balance == {{cookiecutter.premint_amount}}
 
-    tx = token.burn(420, sender=owner)
+    TEST_AMOUNT = 420
+    tx = token.burn(TEST_AMOUNT, sender=owner)
 
     logs = list(tx.decode_logs(token.Transfer))
     assert len(logs) == 1
     assert logs[0].sender == owner
-    assert logs[0].amount == 420
+    assert logs[0].amount == TEST_AMOUNT
 
     owner_balance = token.balanceOf(owner)
-    assert owner_balance == {cookiecutter.premint_amount} - 420
+    assert owner_balance == {{cookiecutter.premint_amount}} - TEST_AMOUNT
 
     totalSupply = token.totalSupply()
-    assert totalSupply == {cookiecutter.premint_amount} - 420
+    assert totalSupply == {{cookiecutter.premint_amount}} - TEST_AMOUNT
 {%- endif %}
 {%- if cookiecutter.permitable == 'y' %}
 
