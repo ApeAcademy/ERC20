@@ -72,8 +72,8 @@ def __init__({%- if cookiecutter.ERC4626 == 'y' %}asset: ERC20{%- endif %}):
     self.totalSupply = {{cookiecutter.premint_amount}}
     self.balanceOf[msg.sender] = {{cookiecutter.premint_amount}}
 {%- else %}
-    self.totalSupply = 1000
-    self.balanceOf[msg.sender] = 1000
+    self.totalSupply = 0
+    self.balanceOf[msg.sender] = 0
 {%- endif %}
 
 {%- if cookiecutter.ERC4626 == 'y' %}
