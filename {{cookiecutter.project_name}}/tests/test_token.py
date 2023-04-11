@@ -172,7 +172,11 @@ def test_mint(token, owner, receiver):
     Create an approved amount of tokens.
     """
     totalSupply = token.totalSupply()
-    assert totalSupply == 1000
+{%- if cookiecutter.premint == 'y' %}
+    assert token.totalSupply() == {{cookiecutter.premint_amount}}
+{%- else %}
+    assert token.totalSupply() == 1000
+{%- endif %}
 
     receiver_balance = token.balanceOf(receiver)
     assert receiver_balance == 0
@@ -189,7 +193,11 @@ def test_mint(token, owner, receiver):
     assert receiver_balance == 420
 
     totalSupply = token.totalSupply()
-    assert totalSupply == 1420
+{%- if cookiecutter.premint == 'y' %}
+    assert token.totalSupply() == {{cookiecutter.premint_amount}} + 420
+{%- else %}
+    assert token.totalSupply() == 1000 + 420
+{%- endif %}
 
 
 def test_add_minter(token, owner, accounts):
