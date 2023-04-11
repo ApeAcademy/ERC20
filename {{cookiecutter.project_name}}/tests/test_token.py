@@ -65,6 +65,7 @@ def test_transfer(token, owner, receiver):
     assert owner_balance == 900
 {%- endif %}
 
+def test_transfer_insufficient_funds(token, owner, receiver):
     # Expected insufficient funds failure
     # ape.reverts: Reverts the current call using a given snapshot ID.
     # Allows developers to go back to a previous state.
