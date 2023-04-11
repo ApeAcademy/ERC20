@@ -23,8 +23,8 @@ def test_initial_state(token, owner):
     assert token.totalSupply() == {{cookiecutter.premint_amount}}
     assert token.balanceOf(owner) == {{cookiecutter.premint_amount}}
 {%- else %}
-    assert token.totalSupply() == 1000
-    assert token.balanceOf(owner) == 1000
+    assert token.totalSupply() == 0
+    assert token.balanceOf(owner) == 0
 {%- endif %}
 
 
@@ -65,6 +65,7 @@ def test_transfer(token, owner, receiver):
     assert owner_balance == 900
 {%- endif %}
 
+def test_transfer_insufficient_funds(token, owner, receiver):
     # Expected insufficient funds failure
     # ape.reverts: Reverts the current call using a given snapshot ID.
     # Allows developers to go back to a previous state.
