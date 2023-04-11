@@ -23,8 +23,8 @@ def test_initial_state(token, owner):
     assert token.totalSupply() == {{cookiecutter.premint_amount}}
     assert token.balanceOf(owner) == {{cookiecutter.premint_amount}}
 {%- else %}
-    assert token.totalSupply() == 1000
-    assert token.balanceOf(owner) == 1000
+    assert token.totalSupply() == 0
+    assert token.balanceOf(owner) == 0
 {%- endif %}
 
 
